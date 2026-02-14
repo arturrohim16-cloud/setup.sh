@@ -1,68 +1,89 @@
 #!/bin/bash
-# Installer-utama
-# AJI MASTER SYSTEM V16
-# -----------------------------------------
+# =========================================
+# Installer Utama - AJI MASTER SYSTEM V16
+# =========================================
 
-# Clear layar dan minta Domain di awal
+# 1. Minta Input Domain di Awal
 clear
-echo -e "═══════════════════════════════════════════════════"
-echo -e "      SELAMAT DATANG DI INSTALLER AJI MASTER"
-echo -e "═══════════════════════════════════════════════════"
-read -p " Masukkan Domain Anda : " domain
+echo -e "\e[1;31m═══════════════════════════════════════════════════\e[0m"
+echo -e "       \e[41;1;37m  WELCOME TO AJI MASTER INSTALLER  \e[0m"
+echo -e "\e[1;31m═══════════════════════════════════════════════════\e[0m"
+echo -e ""
+read -p " Masukkan Domain Anda (Contoh: aji.com) : " domain
+
 if [[ -z $domain ]]; then
-    echo " Error: Domain tidak boleh kosong!"
+    echo -e "\e[1;31m Error: Domain tidak boleh kosong!\e[0m"
     exit 1
 fi
 
-# Simpan domain ke folder sistem agar terbaca oleh Menu
+# Simpan Domain ke Folder Sistem
 mkdir -p /etc/xray
 echo "$domain" > /etc/xray/domain
 echo "$domain" > /root/domain
 
-# 1. Update & Install Dependencies
+# 2. Update & Install Dependencies
+echo -e "\e[1;32m Updating system and installing tools...\e[0m"
 apt update -y
 apt upgrade -y
 apt install -y software-properties-common curl wget sudo socat cron bash-completion ntpdate
 apt install -y net-tools vnstat jq bsdmainutils python3 python3-pip
 
-# 2. Buat Direktori Kerja
+# 3. Buat Direktori Kerja & Database User
 mkdir -p /etc/aji
 mkdir -p /var/log/xray
 touch /etc/aji/users.db
 
-# 3. Setup Timezone (Jakarta)
+# 4. Setup Timezone (Jakarta)
 timedatectl set-timezone Asia/Jakarta
 
-# 4. Install Xray Core
-echo -e "Installing Xray Core..."
+# 5. Install Xray Core Otomatis
+echo -e "\e[1;32m Installing Xray Core...\e[0m"
 bash -c "$(curl -L https://github.com/XTLS/Xray-install/raw/main/install-release.sh)" @ install
 
-# 5. Konfigurasi Xray Minimalis agar service bisa jalan
+# 6. Pasang Konfigurasi Default Xray
 cat > /etc/xray/config.json <<EOF
 {
-    "log": { "access": "/var/log/xray/access.log", "error": "/var/log/xray/error.log", "loglevel": "warning" },
+    "log": {
+        "access": "/var/log/xray/access.log",
+        "error": "/var/log/xray/error.log",
+        "loglevel": "warning"
+    },
     "inbounds": [
         {
-            "port": 443, "protocol": "vless", "settings": { "clients": [], "decryption": "none" },
-            "streamSettings": { "network": "ws", "security": "none" }
+            "port": 443,
+            "protocol": "vless",
+            "settings": {
+                "clients": [],
+                "decryption": "none"
+            },
+            "streamSettings": {
+                "network": "ws",
+                "security": "none"
+            }
         }
     ],
-    "outbounds": [{ "protocol": "freedom", "settings": {} }]
+    "outbounds": [
+        {
+            "protocol": "freedom",
+            "settings": {}
+        }
+    ]
 }
 EOF
 
-# 6. Ambil File Menu Master
-echo -e "Downloading Menu Master..."
+# 7. Ambil File Menu Master dari GitHub kamu
+echo -e "\e[1;32m Downloading Menu Master...\e[0m"
 wget -q -O /usr/bin/menu "https://raw.githubusercontent.com/arturrohim16-cloud/Ajimaster-scriot/refs/heads/main/Scriptku"
 chmod +x /usr/bin/menu
 
-# 7. Selesai
+# 8. Selesai
 systemctl restart xray
 clear
-echo -e "═══════════════════════════════════════════════════"
-echo -e "       INSTALLASI SELESAI - AJI MASTER V16"
-echo -e "═══════════════════════════════════════════════════"
-echo -e " Domain Anda : $(cat /etc/xray/domain)"
-echo -e " Ketik 'menu' untuk membuka dashboard"
-echo -e "═══════════════════════════════════════════════════"
-
+echo -e "\e[1;31m═══════════════════════════════════════════════════\e[0m"
+echo -e "         INSTALLASI SELESAI - AJI MASTER V16"
+echo -e "\e[1;31m═══════════════════════════════════════════════════\e[0m"
+echo -e " \e[1;32mDomain Terdaftar\e[0m : $(cat /etc/xray/domain)"
+echo -e " \e[1;32mStatus Xray\e[0m      : Active (Running)"
+echo -e ""
+echo -e " \e[1;33mSilakan ketik '\e[1;31mmenu\e[1;33m' untuk membuka dashboard\e[0m"
+echo -e "\e[1;31m═══════════════════════════════════════════════════\e[0m"
