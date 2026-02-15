@@ -58,7 +58,23 @@ cat > /etc/xray/config.json <<EOF
             },
             "streamSettings": {
                 "network": "ws",
-                "security": "none"
+                "security": "none",
+                "wsSettings": {
+                    "path": "/vless"
+                }
+            }
+        },
+        {
+            "port": 80,
+            "protocol": "vmess",
+            "settings": {
+                "clients": []
+            },
+            "streamSettings": {
+                "network": "ws",
+                "wsSettings": {
+                    "path": "/vmess"
+                }
             }
         }
     ],
