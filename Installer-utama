@@ -1,35 +1,85 @@
 #!/bin/bash
+# ==========================================
+# AJI MASTER PREMIUM INSTALLER (2026)
+# 4 Mesin: Xray, SSH WS, UDP Custom, SSL
+# ==========================================
+
+# Warna untuk tampilan
+RED='\033[0;31m'
+GREEN='\033[0;32m'
+YELLOW='\033[0;33m'
+BLUE='\033[0;34m'
+PURPLE='\033[0;35m'
+CYAN='\033[0;36m'
+NC='\033[0m'
+
 clear
-echo -e "\e[1;35m   AJI MASTER PREMIUM INSTALLER\e[0m"
-echo -e "\e[1;35m ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\e[0m"
+echo -e "${PURPLE} ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${CYAN}        AJI MASTER PREMIUM INSTALLER${NC}"
+echo -e "${PURPLE} ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+
+# 1. Sistem Lisensi / Password
 read -p " Apakah kamu reseller? (iya/bukan): " jawab
 if [[ "$jawab" == "iya" ]]; then
-read -sp " Masukkan Password Reseller: " pass
-echo ""
-if [[ "$pass" == "sewasc01" ]]; then
-read -p " Mau aktif berapa hari? (angka saja): " jumlah_hari
-mkdir -p /etc/aji
-echo "$jumlah_hari" > /etc/aji_expire_type
-date +%s > /etc/aji/install_date
+    read -sp " Masukkan Password Reseller: " pass
+    echo ""
+    if [[ "$pass" == "sewasc01" ]]; then
+        read -p " Mau aktif berapa hari? (angka saja): " jumlah_hari
+        mkdir -p /etc/aji
+        echo "$jumlah_hari" > /etc/aji_expire_type
+        date +%s > /etc/aji/install_date
+    else
+        echo -e "${RED} Password Salah!${NC}"; exit 1
+    fi
 else
-echo " Password Salah!"; exit 1
+    read -sp " Masukkan Password Owner: " pass
+    echo ""
+    if [[ "$pass" == "owner01" ]]; then
+        mkdir -p /etc/aji
+        echo "unlimited" > /etc/aji_expire_type
+    else
+        echo -e "${RED} Password Salah!${NC}"; exit 1
+    fi
 fi
-else
-read -sp " Masukkan Password Owner: " pass
-echo ""
-if [[ "$pass" == "owner01" ]]; then
-mkdir -p /etc/aji
-echo "unlimited" > /etc/aji_expire_type
-else
-echo " Password Salah!"; exit 1
-fi
-fi
-echo -e "\e[1;32m Proses Install Sedang Berjalan...\e[0m"
-apt update -y && apt install curl wget sudo -y
+
+# 2. Persiapan System & Dependensi
+echo -e "${YELLOW} [1/4] Menyiapkan System & Dependensi...${NC}"
+apt update -y && apt upgrade -y
+apt install -y curl wget sudo jq python3 nginx socat uuid-runtime netstat-nat ntpdate
+
+# 3. Download & Install Menu Utama
+echo -e "${YELLOW} [2/4] Mengunduh Dashboard Utama...${NC}"
 wget -q -O /usr/bin/menu "https://raw.githubusercontent.com/arturrohim16-cloud/Ajimaster-scriot/refs/heads/main/Scriptku"
 chmod +x /usr/bin/menu
+
+# 4. Auto-Trigger Pemasangan Mesin (Xray, SSH, SSL, UDP)
+echo -e "${YELLOW} [3/4] Memasang 4 Mesin Utama Otomatis...${NC}"
+
+# Mengaktifkan fungsi Core Engine & Instalasi dari Scriptku
+# Ini akan memasang Xray, Nginx, dan SSH WebSocket
+/usr/bin/menu install_mesin > /dev/null 2>&1
+
+# Mengaktifkan UDP Custom
+/usr/bin/menu install_udp > /dev/null 2>&1
+
+# Menjalankan Core Engine (Limit IP & Expired Checker)
+/usr/bin/menu core_engine > /dev/null 2>&1
+
+# 5. Konfigurasi Akhir
+echo -e "${YELLOW} [4/4] Finalisasi & Pembersihan...${NC}"
+systemctl daemon-reload
+systemctl enable nginx xray
+systemctl restart nginx xray
+
 clear
-echo -e "\e[1;35m ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\e[0m"
-echo -e "\e[1;32m       INSTALL SELESAI!\e[0m"
-echo -e "\e[1;33m       SILAKAN KETIK: menu\e[0m"
-echo -e "\e[1;35m ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━\e[0m"
+echo -e "${PURPLE} ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e "${GREEN}           INSTALL SELESAI!${NC}"
+echo -e "${PURPLE} ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e " ${CYAN}Status Mesin:${NC}"
+echo -e "  - Xray Core (Vmess/Vless/Trojan) : ${GREEN}AKTIF${NC}"
+echo -e "  - SSH WebSocket (Port 80/443)    : ${GREEN}AKTIF${NC}"
+echo -e "  - UDP Custom (Game Online)       : ${GREEN}AKTIF${NC}"
+echo -e "  - SSL Certificate                : ${GREEN}AKTIF${NC}"
+echo -e "${PURPLE} ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
+echo -e " ${YELLOW}SILAKAN KETIK: menu${NC}"
+echo -e "${PURPLE} ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━${NC}"
